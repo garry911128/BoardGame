@@ -69,6 +69,7 @@ export function gameState(overrides: Partial<GameStateClient> = {}): GameStateCl
     phase: 'LOBBY',
     round: 1,
     ambitionHolder: 'p1',
+    hostId: 'p1',
     playerOrder: ['p1', 'p2'],
     currentTurnPlayerId: 'p1',
     currentLocIndex: 0,

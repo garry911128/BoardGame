@@ -18,12 +18,17 @@ import RevelationScreen from '../RevelationScreen'
 import WithdrawScreen from '../WithdrawScreen'
 import { card, gameState, kine, player } from './fixtures'
 
-const socketMock = vi.hoisted(() => ({
-  emit: vi.fn(),
-  on: vi.fn(),
-  off: vi.fn(),
+// useGameActions() 回傳 Proxy：actions.selectClan('brujah') → emit('selectClan', 'brujah')。
+const socketMock = vi.hoisted(() => ({ emit: vi.fn() }))
+vi.mock('../convexGame', () => ({
+  useGameActions: () =>
+    new Proxy({} as Record<string, (...a: unknown[]) => void>, {
+      get: (_t, prop) =>
+        typeof prop === 'string'
+          ? (...args: unknown[]) => socketMock.emit(prop, ...args)
+          : undefined,
+    }),
 }))
-vi.mock('../socket', () => ({ default: socketMock }))
 
 // ── Shared test helpers ────────────────────────────────────────────────────
 

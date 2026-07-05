@@ -1,5 +1,5 @@
 import type { ClanId, GameStateClient } from '@kindred/shared'
-import socket from './socket'
+import { useGameActions } from './convexGame'
 import { CLANS, CLAN_ORDER } from './clans'
 import WaitingPlayers from './WaitingPlayers'
 import './ClanSelectScreen.css'
@@ -24,6 +24,7 @@ interface Props {
 }
 
 export default function ClanSelectScreen({ myId, gameState }: Props) {
+  const actions = useGameActions()
   const me = gameState.players[myId]
   const takenClans = new Set(
     Object.values(gameState.players)
@@ -36,7 +37,7 @@ export default function ClanSelectScreen({ myId, gameState }: Props) {
   function pickClan(clan: ClanId) {
     if (me?.clan) return
     if (takenClans.has(clan)) return
-    socket.emit('selectClan', clan)
+    actions.selectClan(clan)
   }
 
   return (

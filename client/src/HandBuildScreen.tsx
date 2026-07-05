@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import type { CardDef, GameStateClient } from '@kindred/shared'
-import socket from './socket'
+import { useGameActions } from './convexGame'
 import CardImage from './CardImage'
 import WaitingPlayers from './WaitingPlayers'
 import './HandBuildScreen.css'
@@ -52,6 +52,7 @@ function TypeDistribution({ cards, label }: { cards: { type: string }[]; label: 
 }
 
 export default function HandBuildScreen({ myId, gameState }: Props) {
+  const actions = useGameActions()
   const draft = gameState.myHandBuildDraft
   const hand  = gameState.myHand
   const waiting = gameState.waitingFor
@@ -65,7 +66,7 @@ export default function HandBuildScreen({ myId, gameState }: Props) {
 
   function confirmPick() {
     if (!pendingCard) return
-    socket.emit('selectHandCard', pendingCard.id)
+    actions.selectHandCard(pendingCard.id)
     setPendingCard(null)
   }
 

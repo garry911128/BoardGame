@@ -1,0 +1,5 @@
+{
+  "installCommand": "npm install",
+  "buildCommand": "unzip -o assets.zip -d client/public && npm run build -w shared && if [ -n \"$CONVEX_DEPLOY_KEY\" ]; then npx convex deploy --cmd 'npm run build -w client' --cmd-url-env-var-name VITE_CONVEX_URL; else npm run build -w client; fi",
+  "outputDirectory": "client/dist"
+}

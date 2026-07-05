@@ -23,7 +23,15 @@ CONTEXT.md
 
 # ── Assets（卡牌圖片等大型二進位檔，用 assets.zip 存版控） ──
 assets/
+# build 時由 assets.zip 解壓；dev 由 vite 靜態伺服，切勿提交
+client/public/assets/
 
 # ── Test artifacts ────────────────────────────
 client/test-results/
 client/playwright-report/
+
+.vercel
+
+# ── Convex 本地匿名部署資料（切勿提交） ──
+.convex/
+.gstack/

@@ -262,7 +262,7 @@ describe('applyAftermath', () => {
       engine.state.resolvedChoices[`VE07:${LOC}:p1`] = 'p2:BR01';
       engine.state.deployments[LOC] = [makeSlot('p1', 'VE07'), makeSlot('p2', 'BR01')];
       aftermath(engine);
-      expect(engine.state.forestallImmune['p1']?.has('BR01')).toBe(true);
+      expect(engine.state.forestallImmune['p1']?.includes('BR01')).toBe(true);
     });
 
     it('未選擇目標：自動選最高印刷戰力', () => {

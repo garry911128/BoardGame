@@ -1,5 +1,6 @@
 import type { GameStateClient, PlayerPublic } from '@kindred/shared'
 import { clanOf } from './clans'
+import { seatPlayers } from './playerOrder'
 import { useDeltaFlash } from './useDeltaFlash'
 import './PlayerSeats.css'
 
@@ -97,7 +98,7 @@ function Seat({ p, isMe, status, isDone, isTarget, isWinner, turnNo }: {
 export default function PlayerSeats({
   gameState, myId, activeStatuses = {}, doneIds, showTurnOrder = false, targetId, winnerId,
 }: Props) {
-  const seats = Object.values(gameState.players)
+  const seats = seatPlayers(gameState)
   const turnIndex = new Map(gameState.playerOrder.map((pid, i) => [pid, i + 1]))
 
   return (

@@ -8,10 +8,17 @@
     "client"
   ],
   "scripts": {
-    "dev": "concurrently \"npm run dev -w server\" \"npm run dev -w client\"",
+    "dev": "concurrently \"npx convex dev\" \"npm run dev -w client\"",
+    "dev:legacy": "concurrently \"npm run dev -w server\" \"npm run dev -w client\"",
     "build": "npm run build -w shared && npm run build -w server && npm run build -w client"
   },
   "devDependencies": {
-    "concurrently": "^8.2.2"
+    "@edge-runtime/vm": "^5.0.0",
+    "concurrently": "^8.2.2",
+    "convex-test": "^0.0.54",
+    "vitest": "^4.1.9"
+  },
+  "dependencies": {
+    "convex": "^1.42.1"
   }
 }

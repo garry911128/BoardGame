@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { GameStateClient } from '@kindred/shared'
-import socket from './socket'
+import { useGameActions } from './convexGame'
+import { seatPlayers } from './playerOrder'
 import RulesModal from './RulesModal'
 import './LobbyScreen.css'
 
@@ -11,6 +12,7 @@ interface Props {
 }
 
 export default function LobbyScreen({ myId, gameState, onError }: Props) {
+  const actions = useGameActions()
   const [name, setName] = useState('')
   const [joinCode, setJoinCode] = useState('')
   const [view, setView] = useState<'home' | 'join'>('home')
@@ -43,14 +45,15 @@ export default function LobbyScreen({ myId, gameState, onError }: Props) {
   }
 
   const inRoom = gameState !== null
-  const players = inRoom ? Object.values(gameState.players) : []
-  const isHost = inRoom && players[0]?.id === myId
+  const players = inRoom ? seatPlayers(gameState) : []
+  // 房主由 state.hostId 決定（不可用 players[0]：Convex 會排序 players key，插入順序不保留）
+  const isHost = inRoom && gameState.hostId === myId
   const canStart = players.length >= 3
 
   function handleCreate() {
     const n = name.trim()
     if (!n) { onError('請輸入名字'); return }
-    socket.emit('createRoom', { name: n })
+    actions.createRoom({ name: n })
   }
 
   function handleJoin() {
@@ -58,11 +61,11 @@ export default function LobbyScreen({ myId, gameState, onError }: Props) {
     const c = joinCode.trim().toUpperCase()
     if (!n) { onError('請輸入名字'); return }
     if (c.length !== 4) { onError('房間代碼為 4 碼'); return }
-    socket.emit('joinRoom', { code: c, name: n })
+    actions.joinRoom({ code: c, name: n })
   }
 
   function handleStart() {
-    socket.emit('readyStart')
+    actions.readyStart()
   }
 
   if (inRoom) {
@@ -82,13 +85,13 @@ export default function LobbyScreen({ myId, gameState, onError }: Props) {
 
         <div className="lobby-room__players">
           <div className="lobby-room__players-title">玩家 {players.length}/6</div>
-          {players.map((p, i) => (
+          {players.map((p) => (
             <div key={p.id} className="lobby-room__player">
               <span className="lobby-room__player-name">
                 {p.name}
                 {p.id === myId && ' (你)'}
               </span>
-              {i === 0 && <span className="lobby-room__host-badge">房主</span>}
+              {p.id === gameState.hostId && <span className="lobby-room__host-badge">房主</span>}
             </div>
           ))}
         </div>

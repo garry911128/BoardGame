@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { CardDef, GameStateClient, AllyCard, ClanId } from '@kindred/shared'
-import socket from './socket'
+import { useGameActions } from './convexGame'
+import { seatIds } from './playerOrder'
 import CardImage from './CardImage'
 import { locationImageSrc, allyImageSrc } from './cardImages'
 import { CARD_DEFS, TYPE_LABEL_ZH } from './cardDefs'
@@ -92,6 +93,7 @@ function DeployDialog({ card, locName, myBlood, isMine, onConfirm, onCancel }: D
 // ── Main Component ─────────────────────────────────────────────
 
 export default function PlanningScreen({ myId, gameState }: Props) {
+  const actions = useGameActions()
   const me = gameState.players[myId]
   const hand = gameState.myHand
   const alliance = gameState.myAlliance
@@ -119,7 +121,7 @@ export default function PlanningScreen({ myId, gameState }: Props) {
 
   function confirmDeploy(faceDown: boolean, bloodTokens: number) {
     if (!dialog) return
-    socket.emit('submitDeployment', {
+    actions.submitDeployment({
       locationId: dialog.locId,
       cardId: dialog.card.id,
       faceDown,
@@ -133,7 +135,7 @@ export default function PlanningScreen({ myId, gameState }: Props) {
   }
 
   function skip() {
-    socket.emit('submitDeployment', { skip: true })
+    actions.submitDeployment({ skip: true })
     setSkipConfirm(false)
   }
 
@@ -144,12 +146,13 @@ export default function PlanningScreen({ myId, gameState }: Props) {
 
   function confirmDrain() {
     if (!drainConfirm) return
-    socket.emit('drainAlly', drainConfirm.id)
+    actions.drainAlly(drainConfirm.id)
     setDrainConfirm(null)
   }
 
-  // 固定座位順序(加入順序),整場不變 — 出牌區內的卡牌也依此排序
-  const seatOrder = Object.keys(gameState.players)
+  // 固定座位順序(playerOrder,整場不變) — 出牌區內的卡牌也依此排序
+  // 不可用 Object.keys(players)：Convex 會排序 key，插入順序不保留
+  const seatOrder = seatIds(gameState)
   const doneIds = new Set(seatOrder.filter(pid => !waiting.includes(pid)))
 
   return (

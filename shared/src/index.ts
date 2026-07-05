@@ -186,8 +186,9 @@ export interface GameStateFull {
   pendingChoices: PendingChoice[];
   resolvedChoices: Record<string, string>;
   activeEffect: ActiveEffect | null;
-  // VE07 先發制人：key = playerId，value = 免疫的 cardId set（當回合有效）
-  forestallImmune: Record<string, Set<string>>;
+  // VE07 先發制人：key = playerId，value = 免疫的 cardId 陣列（當回合有效）
+  // 注意：改為陣列而非 Set 以保持 JSON 可序列化（Convex state 需純 JSON）
+  forestallImmune: Record<string, string[]>;
 }
 
 // ─── Client 收到的狀態 ────────────────────────
@@ -197,6 +198,12 @@ export interface GameStateClient {
   phase: GamePhase;
   round: number;
   ambitionHolder: string;
+  /**
+   * 房主 playerId。房主身分存在 Convex rooms 文件（引擎 state 不認識），
+   * 由 game.state query 注入投影；LOBBY 顯示「開始遊戲」按鈕與房主標記用。
+   * （不可用 players 物件 key 順序判定房主：Convex 儲存會排序 key。）
+   */
+  hostId?: string;
   playerOrder: string[];
   currentTurnPlayerId: string;
   currentLocIndex: number;       // 當前結算中的地點索引（-1 = 未在結算）

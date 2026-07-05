@@ -1,12 +1,8 @@
-import { defineConfig, loadEnv } from 'vite'
+import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import path from 'path'
 
-export default defineConfig(({ mode }) => {
-  const env = loadEnv(mode, process.cwd())
-  const serverPort = env.VITE_SERVER_PORT ?? '3456'
-  const serverUrl = `http://localhost:${serverPort}`
-
+export default defineConfig(() => {
   return {
     plugins: [react()],
     resolve: {
@@ -17,10 +13,9 @@ export default defineConfig(({ mode }) => {
     server: {
       port: 5173,
       host: true,   // 監聽所有網路介面，包含 VPN IP
-      proxy: {
-        '/socket.io': { target: serverUrl, ws: true },
-        '/assets': { target: serverUrl },
-      },
+      // Convex 後端走 WebSocket 直連 VITE_CONVEX_URL，不再需要 /socket.io proxy。
+      // 卡圖改由 vite 靜態伺服 client/public/assets（build 時由 assets.zip 解壓），
+      // 不再需要 /assets proxy。
     },
   }
 })

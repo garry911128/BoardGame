@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import type { GameStateClient, ClanId } from '@kindred/shared'
-import socket from './socket'
+import { useGameActions } from './convexGame'
 import CardImage from './CardImage'
 import { CARD_DEFS, TYPE_LABEL_ZH } from './cardDefs'
 import { cardName } from './cardNames'
@@ -14,6 +14,7 @@ interface Props {
 }
 
 export default function WithdrawScreen({ myId, gameState }: Props) {
+  const actions = useGameActions()
   const me = gameState.players[myId]
   const waiting = gameState.waitingFor
   const alreadySubmitted = !waiting.includes(myId)
@@ -40,7 +41,7 @@ export default function WithdrawScreen({ myId, gameState }: Props) {
 
   function submit() {
     if (!currentLoc || choice === null) return
-    socket.emit('submitWithdraw', { locationId: currentLoc.id, withdraw: choice })
+    actions.submitWithdraw({ locationId: currentLoc.id, withdraw: choice })
   }
 
   if (!currentLoc) {

@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react'
 import type { ActiveEffect, GameStateClient, ConflictResult, ClanId, StepEvent } from '@kindred/shared'
-import socket from './socket'
+import { useGameActions } from './convexGame'
+import { seatIds } from './playerOrder'
 import { cardName } from './cardNames'
 import CardImage from './CardImage'
 import { CARD_DEFS, TYPE_LABEL_ZH } from './cardDefs'
@@ -229,7 +230,8 @@ function ResultCard({ result, gameState, myId, showStep, onSlotClick }: {
   const activeType = STEP_ACTIVE_TYPE[showStep] ?? null
 
   // 依固定座位順序將卡牌分組,每組掛擁有者名牌 — 一眼看出「這張牌是誰出的」
-  const seatOrder = Object.keys(gameState.players)
+  // 不可用 Object.keys(players)：Convex 會排序 key，插入順序不保留
+  const seatOrder = seatIds(gameState)
   const slotGroups = seatOrder
     .map(pid => ({ pid, groupSlots: slots.filter(sl => sl.playerId === pid) }))
     .filter(g => g.groupSlots.length > 0)
@@ -477,6 +479,7 @@ function BattlefieldOverview({ gameState, myId, highlightLocId, onSlotClick }: {
 
 // ── Main Component ────────────────────────────────────────────────
 export default function RevelationScreen({ myId, gameState }: Props) {
+  const actions       = useGameActions()
   const results       = gameState.lastConflictResults
   const phase         = gameState.phase
   const waiting       = gameState.waitingFor
@@ -546,11 +549,11 @@ export default function RevelationScreen({ myId, gameState }: Props) {
   const iVotedSkip = skipVotes.includes(myId)
   const totalPlayers = Object.keys(gameState.players).length
 
-  function confirm()  { socket.emit('readyAdvance') }
-  function voteSkip() { socket.emit('skipEffects') }
+  function confirm()  { actions.readyAdvance() }
+  function voteSkip() { actions.skipEffects() }
   function respondChoice(option: string) {
     if (!pendingChoice) return
-    socket.emit('respondChoice', { choiceId: pendingChoice.id, option })
+    actions.respondChoice({ choiceId: pendingChoice.id, option })
   }
 
   const isReveal   = phase === 'REVELATION'

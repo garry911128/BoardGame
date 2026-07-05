@@ -10,14 +10,20 @@ import RevelationScreen from '../RevelationScreen'
 import WithdrawScreen from '../WithdrawScreen'
 import { card, gameState, player } from './fixtures'
 
+// useGameActions() 回傳一個 Proxy：actions.selectClan('brujah') → emit('selectClan', 'brujah')。
+// 讓所有既有的 `socketMock.emit).toHaveBeenCalledWith('event', payload)` 斷言原封不動。
 const socketMock = vi.hoisted(() => ({
   emit: vi.fn(),
-  on: vi.fn(),
-  off: vi.fn(),
 }))
 
-vi.mock('../socket', () => ({
-  default: socketMock,
+vi.mock('../convexGame', () => ({
+  useGameActions: () =>
+    new Proxy({} as Record<string, (...a: unknown[]) => void>, {
+      get: (_t, prop) =>
+        typeof prop === 'string'
+          ? (...args: unknown[]) => socketMock.emit(prop, ...args)
+          : undefined,
+    }),
 }))
 
 describe('ClanSelectScreen', () => {

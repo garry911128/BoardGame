@@ -1,5 +1,6 @@
 import type { GameStateClient } from '@kindred/shared'
 import { clanOf } from './clans'
+import { seatPlayers } from './playerOrder'
 import './WaitingPlayers.css'
 
 interface Props {
@@ -15,7 +16,7 @@ interface Props {
  */
 export default function WaitingPlayers({ gameState, myId, doneLabel = '已完成' }: Props) {
   const waiting = new Set(gameState.waitingFor)
-  const players = Object.values(gameState.players)
+  const players = seatPlayers(gameState)
   const doneCount = players.filter(p => !waiting.has(p.id)).length
 
   return (

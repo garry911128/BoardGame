@@ -64,6 +64,17 @@ export class GameEngine {
     };
   }
 
+  /**
+   * 從既有（已序列化）的 GameStateFull 直接掛回引擎，不重建初始狀態。
+   * Convex mutation 每次 load → hydrate → 跑引擎 → save 的入口。
+   * 繞過 constructor（後者只吃 roomCode 並重建全新狀態）。
+   */
+  static fromState(state: GameStateFull): GameEngine {
+    const engine = Object.create(GameEngine.prototype) as GameEngine;
+    engine.state = state;
+    return engine;
+  }
+
   // ─── 玩家管理 ───────────────────────────────
 
   addPlayer(id: string, name: string): void {
@@ -939,7 +950,7 @@ export class GameEngine {
       if (!card || (card.type !== 'preparation' && card.type !== 'passive')) return;
       if (slot.skipEffects) return; // VE03: 選擇跳過效果
       const p = s.players[slot.playerId]!;
-      const rivals = Object.values(s.players).filter(x => x.id !== slot.playerId && !s.forestallImmune[x.id]?.has(card.id));
+      const rivals = Object.values(s.players).filter(x => x.id !== slot.playerId && !s.forestallImmune[x.id]?.includes(card.id));
 
       switch (card.id) {
         case 'BR07': { // Show of Force: steal 1 from each rival
@@ -1194,7 +1205,7 @@ export class GameEngine {
       if (!card || (card.type !== 'aftermath' && card.type !== 'passive')) return;
       if (slot.skipEffects) return; // VE03: 選擇跳過效果
       const p = s.players[slot.playerId]!;
-      const rivals = Object.values(s.players).filter(x => x.id !== slot.playerId && !s.forestallImmune[x.id]?.has(card.id));
+      const rivals = Object.values(s.players).filter(x => x.id !== slot.playerId && !s.forestallImmune[x.id]?.includes(card.id));
       const isWinner = result.winner === slot.playerId;
 
       // ── Hunt-type cards (steal 1 from each rival) ──
@@ -1394,8 +1405,8 @@ export class GameEngine {
             if (tCard && tCard.power > 0) {
               p.blood += tCard.power;
               // 記錄免疫：此玩家對此牌的失血/偷血效果免疫
-              if (!s.forestallImmune[p.id]) s.forestallImmune[p.id] = new Set();
-              s.forestallImmune[p.id].add(tCardId);
+              if (!s.forestallImmune[p.id]) s.forestallImmune[p.id] = [];
+              if (!s.forestallImmune[p.id].includes(tCardId)) s.forestallImmune[p.id].push(tCardId);
               result.bloodEvents.push(ev(`${p.name} 先發制人：目標 ${tCard.name_zh}，+${tCard.power}💧，免疫其失血/偷血效果`, { cardId: 'VE07', sourcePlayerName: p.name, delta: { blood: tCard.power } }));
               this.log(`${p.name} 的先發制人選擇 ${tCard.name_zh}，獲得 ${tCard.power} 血液，免疫其效果`);
             }
